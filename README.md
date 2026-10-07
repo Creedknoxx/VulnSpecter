@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="banner.png" alt="VulnSpecter Banner" width="100%">
+</p>
+
 # VulnSpecter (Vuln5p3c73r Edition)
 
 **Automated Security Testing Platform**
