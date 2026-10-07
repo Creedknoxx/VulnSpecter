@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # ============================================
-# DEVELOPER INFO (Edit this section later)
+# DEVELOPER INFO
 # ============================================
-# Author: [YOUR_NAME]
-# Email: [YOUR_EMAIL]
-# GitHub: https://github.com/Creedknoxx
+# Author: Creed-Knoxx
+# GitHub: https://github.com/CreedKnoxx
 # Version: 1.0.0
 # Tool Name: VulnSpecter
 # Codename: Vuln5p3c73r
@@ -12,6 +11,7 @@
 
 import sys
 import argparse
+import ipaddress
 from rich.console import Console
 from rich.panel import Panel
 from rich import box
@@ -20,18 +20,10 @@ from rich import box
 from utils.dependency_manager import DependencyManager
 
 console = Console()
-import ipaddress
 
-def is_ip_address(target):
-    """Check if the target is an IP address or a domain name."""
-    try:
-        ipaddress.ip_address(target)
-        return True
-    except ValueError:
-        return False
 BANNER = """
 ╔═══════════════════════════════════════════════════════════════╗
-║   VULNSPECTER v1.0.0                                          ║
+║   VULNSPECTER v1.0.0                                          
 ║   Automated Security Testing Platform                         ║
 ║   Codename: Vuln5p3c73r                                       ║
 ╚═══════════════════════════════════════════════════════════════╝
@@ -48,9 +40,49 @@ def print_banner():
     )
     console.print(panel)
 
+def print_custom_help():
+    console.print("\n[bold magenta]╔═══════════════════════════════════════════════════════════════╗[/bold magenta]")
+    console.print("[bold magenta]║[/bold magenta] [bold white]VulnSpecter Help Menu[/bold white]                                      [bold magenta]║[/bold magenta]")
+    console.print("[bold magenta]═══════════════════════════════════════════════════════════════╝[/bold magenta]\n")
+    
+    console.print("[bold cyan]Usage:[/bold cyan] python3 main.py [OPTIONS]\n")
+    
+    console.print("[bold yellow] Target Options:[/bold yellow]")
+    console.print("  [bold white]-t, --target[/bold white] TARGET   Target Domain or IP (e.g., example.com)")
+    
+    console.print("\n[bold yellow]🔍 Scanning Modules:[/bold yellow]")
+    console.print("      [bold white]--scan-ports[/bold white]      Run Nmap port scan")
+    console.print("      [bold white]--scan-vulns[/bold white]      Run Nuclei vulnerability scan")
+    console.print("      [bold white]--exploit-intel[/bold white]   Map vulnerabilities to public exploits")
+    
+    console.print("\n[bold yellow]📄 Output & Reporting:[/bold yellow]")
+    console.print("  [bold white]-o, --output[/bold white] FILE     Custom output file path")
+    console.print("      [bold white]--no-save[/bold white]         Do not save results to a file")
+    console.print("      [bold white]--report[/bold white]          Generate final HTML report")
+    
+    console.print("\n[bold yellow]⚙️ System & Debugging:[/bold yellow]")
+    console.print("      [bold white]--check-deps[/bold white]      Show detailed dependency table")
+    console.print("  [bold white]-v, --verbose[/bold white]         Enable verbose output")
+    console.print("      [bold white]--version[/bold white]         Show version")
+    console.print("  [bold white]-h, --help[/bold white]            Show this help message and exit\n")
+    
+    console.print("[bold cyan]📌 Examples:[/bold cyan]")
+    console.print("  python3 main.py [bold white]-t example.com --scan-ports --report[/bold white]")
+    console.print("  python3 main.py [bold white]-t 192.168.1.100 --scan-vulns --exploit-intel[/bold white]\n")
+    sys.exit(0)
+
+def is_ip_address(target):
+    """Check if the target is an IP address or a domain name."""
+    try:
+        ipaddress.ip_address(target)
+        return True
+    except ValueError:
+        return False
+
 def main():
     parser = argparse.ArgumentParser(
-        description="VulnSpecter - Automated Recon, Vulnerability & Exploit Intelligence Platform"
+        description="VulnSpecter - Automated Recon, Vulnerability & Exploit Intelligence Platform",
+        add_help=False  # Disable default help to use our custom one
     )
     
     # Arguments
@@ -64,7 +96,13 @@ def main():
     parser.add_argument('--scan-vulns', action='store_true', help='Run Nuclei vulnerability scan')
     parser.add_argument('--exploit-intel', action='store_true', help='Map vulnerabilities to public exploits')
     parser.add_argument('--report', action='store_true', help='Generate final HTML report')
+    parser.add_argument('-h', '--help', action='store_true', help='Show this help message and exit')
+    
     args = parser.parse_args()
+    
+    # Handle Help
+    if args.help:
+        print_custom_help()
     
     # 1. Print Banner
     print_banner()
@@ -86,7 +124,7 @@ def main():
     if not args.target:
         console.print("[bold red][!][/bold red] Error: No target specified!")
         console.print("[yellow][*][/yellow] Usage: python3 main.py -t example.com")
-        console.print("[yellow][*][/yellow] Use --check-deps to view system requirements.")
+        console.print("[yellow][*][/yellow] Use --help to see all options.")
         sys.exit(1)
 
     # 6. Auto-Install Dependencies
@@ -102,6 +140,7 @@ def main():
     else:
         from modules.recon.subdomain_scanner import run_subdomain_scan
         run_subdomain_scan(args.target, output_file=args.output, no_save=args.no_save)
+
     # 8. Run Scanners based on flags
     if args.scan_ports:
         from modules.scanner.port_scanner import run_port_scan
@@ -110,6 +149,7 @@ def main():
     if args.scan_vulns:
         from modules.scanner.vuln_scanner import run_vuln_scan
         run_vuln_scan(args.target, output_file=args.output, no_save=args.no_save)
+    
     # 9. Run Exploit Intelligence (if enabled and vulns were scanned)
     if args.exploit_intel and args.scan_vulns:
         from modules.scanner.vuln_scanner import run_vuln_scan
@@ -118,6 +158,7 @@ def main():
         console.print("[yellow][*] Re-running Nuclei to capture vulnerabilities for mapping...[/yellow]")
         vulns = run_vuln_scan(args.target, output_file=args.output, no_save=True)
         run_exploit_intelligence(vulns)
+    
     # 10. Generate Final Report
     if args.report:
         from modules.reporting.html_reporter import generate_html_report
@@ -127,6 +168,7 @@ def main():
     if not args.scan_ports and not args.scan_vulns:
         console.print("[yellow][*] No scan flags provided. Running default port scan...[/yellow]")
         from modules.scanner.port_scanner import run_port_scan
-        run_port_scan(args.target, output_file=args.output, no_save=args.no_save)        
+        run_port_scan(args.target, output_file=args.output, no_save=args.no_save)
+
 if __name__ == "__main__":
     main()
