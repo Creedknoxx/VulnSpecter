@@ -19,9 +19,24 @@ VulnSpecter is a professional-grade automated security testing tool designed for
 - **Professional Reporting**: Generates HTML reports with dark theme
 
 ## Installation
+
+### Prerequisites
+- Python 3.10 or higher
+- Kali Linux / Ubuntu / Debian (recommended)
+- Internet connection for auto-installing system dependencies
+
+### Quick Install
 ```bash
-git clone https://github.com/Creedknoxx/VulnSpecter.git
+# Clone the repository
+git clone https://github.com/CreedKnoxx/VulnSpecter.git
 cd VulnSpecter
+
+# Create virtual environment (recommended)
 python3 -m venv venv
 source venv/bin/activate
-pip install rich
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Run the tool (system dependencies will auto-install)
+python3 main.py --check-deps
